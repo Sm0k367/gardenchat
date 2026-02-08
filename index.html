@@ -1,65 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="description" content="A voice-first memory garden where your spoken memories bloom." />
-  <meta name="theme-color" content="#0a0f14" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Echo Garden — A Living Memory Sanctuary</title>
-  
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌿</text></svg>" />
-  
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Nunito+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Echo Garden - 3D Memory Realm</title>
   <link rel="stylesheet" href="style.css">
+  
+  <!-- Three.js CDN (core + controls + loaders) -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.168.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.168.0/examples/js/controls/OrbitControls.js"></script>
+  <!-- Optional: GLTFLoader for simple models if we add later -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.168.0/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 <body>
-  <!-- 3D Canvas Container -->
-  <div id="canvas-container"></div>
-
+  <!-- 3D Scene Container -->
+  <div id="scene-container"></div>
+  
   <!-- UI Overlay -->
-  <div id="ui-layer">
-    <header class="garden-header">
-      <h1 class="title">Echo Garden</h1>
-      <p class="subtitle">Speak your memory. Watch it bloom.</p>
-    </header>
-
-    <main class="garden-main">
-      <div id="memory-container" class="memory-container">
-        <div class="empty-state">
-          <p>Your garden is quiet. <br>Press the mic to begin.</p>
-        </div>
-      </div>
-
-      <div class="controls">
-        <button id="mic-btn" class="mic-btn" aria-label="Record your memory">
-          <span class="icon">🎤</span>
-          <span class="label">Tap to Speak</span>
-        </button>
-        <div id="status" class="status" aria-live="polite"></div>
-      </div>
-    </main>
-
-    <footer class="garden-footer">
-      <p>Private. Local. Yours.</p>
-    </footer>
+  <div id="ui-overlay">
+    <div id="mic-container">
+      <button id="mic-btn">
+        <span class="mic-icon">🎤</span>
+        <span class="label">Tap to Speak</span>
+      </button>
+      <div id="status"></div>
+    </div>
+    
+    <!-- Memory List (Scrollable, Semi-Transparent) -->
+    <div id="memory-container">
+      <h2>Your Echo Garden</h2>
+      <!-- Memories rendered here -->
+    </div>
+    
+    <!-- Instructions/Welcome -->
+    <div id="welcome-message">
+      Welcome to the Echo Garden. Speak your memories into the mic—they'll bloom in 3D. Navigate with mouse/touch.
+    </div>
   </div>
 
-  <!-- Scripts: THREE.JS FIRST -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r160/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@r160/examples/js/controls/OrbitControls.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@r160/examples/js/postprocessing/EffectComposer.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@r160/examples/js/postprocessing/RenderPass.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@r160/examples/js/postprocessing/UnrealBloomPass.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@r160/examples/js/shaders/CopyShader.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@r160/examples/js/shaders/LuminosityHighPassShader.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@r160/examples/js/postprocessing/ShaderPass.js"></script>
-  
-  <!-- GSAP -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-  
-  <!-- Main App -->
   <script src="main.js"></script>
 </body>
 </html>
