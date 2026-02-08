@@ -1,66 +1,244 @@
-// main.js — Echo Garden (Garden-Ready Version)
-// Voice-first memory garden with generative blooms
+// main.js — Echo Garden 3D
+// Voice-first memory garden with procedural 3D flowers
 
+// --- CONFIG ---
 const CONFIG = {
+  bloomBaseRadius: 1.5,
+  bloomGrowthSpeed: 0.01,
   colors: {
-    joy: '#f4d35e',
-    sorrow: '#5d6d8e',
-    wonder: '#9b59b6',
-    calm: '#7d9c6b',
-    neutral: '#a8b2c1'
+    joy: 0xf4d35e,
+    sorrow: 0x5d6d8e,
+    wonder: 0x9b59b6,
+    calm: 0x7d9c6b,
+    neutral: 0xa8b2c1
   },
-  bloomBaseRadius: 60,
-  bloomGrowthSpeed: 0.3, // Slower = more organic
-  audioContext: null,
-  analyser: null,
-  microphone: null,
-  dataArray: null
+  particleCount: 200,
+  bloomCount: 0
 };
 
-// DOM elements
-const canvas = document.getElementById('garden-canvas');
-const ctx = canvas.getContext('2d');
+// --- DOM ELEMENTS ---
+const canvasContainer = document.getElementById('canvas-container');
 const micBtn = document.getElementById('mic-btn');
 const statusEl = document.getElementById('status');
 const memoryContainer = document.getElementById('memory-container');
 
-// State
-let isRecording = false;
+// --- THREE.JS SETUP ---
+let scene, camera, renderer, composer;
+let bloomPass, renderPass;
+let orbitControls;
+let clock = new THREE.Clock();
+let memories = JSON.parse(localStorage.getItem('echo_garden_memories') || '[]');
+let ambientParticles = [];
+let bloomGroup = new THREE.Group();
+
+// Audio
 let audioContext = null;
 let analyser = null;
 let microphone = null;
 let dataArray = null;
-let bloom = null;
-let ambientParticles = [];
-let memories = JSON.parse(localStorage.getItem('echo_garden_memories') || '[]');
 
-// ✨ NEW: Initialize ambient particles (pollen, soft light)
-function initAmbientParticles() {
-  ambientParticles = [];
-  for (let i = 0; i < 50; i++) {
-    ambientParticles.push({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      radius: Math.random() * 2 + 0.5,
-      speedX: (Math.random() - 0.5) * 0.3,
-      speedY: (Math.random() - 0.5) * 0.3,
-      opacity: Math.random() * 0.4 + 0.1,
-      color: Math.random() > 0.5 ? '#fff' : '#f4d35e'
-    });
-  }
+// Initialize Three.js
+function initThree() {
+  // Scene
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0a0f14);
+  scene.fog = new THREE.FogExp2(0x0a0f14, 0.02);
+
+  // Camera
+  camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.set(0, 5, 15);
+
+  // Renderer
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.toneMapping = THREE.ReinhardToneMapping;
+  canvasContainer.appendChild(renderer.domElement);
+
+  // Controls
+  orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
+  orbitControls.enableDamping = true;
+  orbitControls.dampingFactor = 0.05;
+  orbitControls.minDistance = 5;
+  orbitControls.maxDistance = 50;
+  orbitControls.maxPolarAngle = Math.PI / 2 - 0.1; // Prevent going under ground
+
+  // Postprocessing
+  renderPass = new THREE.RenderPass(scene, camera);
+  bloomPass = new THREE.UnrealBloomPass(
+    new THREE.Vector2(window.innerWidth, window.innerHeight),
+    1.5,
+    0.4,
+    0.85
+  );
+  bloomPass.threshold = 0.2;
+  bloomPass.strength = 1.2;
+  bloomPass.radius = 0.5;
+
+  composer = new THREE.EffectComposer(renderer);
+  composer.addPass(renderPass);
+  composer.addPass(bloomPass);
+
+  // Lighting
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+  scene.add(ambientLight);
+
+  const directionalLight = new THREE.DirectionalLight(0xffaa00, 0.8);
+  directionalLight.position.set(10, 20, 10);
+  scene.add(directionalLight);
+
+  // Ground plane (subtle)
+  const groundGeo = new THREE.PlaneGeometry(100, 100);
+  const groundMat = new THREE.MeshStandardMaterial({
+    color: 0x0f161e,
+    roughness: 1,
+    metalness: 0.1
+  });
+  const ground = new THREE.Mesh(groundGeo, groundMat);
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = -2;
+  scene.add(ground);
+
+  // Ambient particles (pollen/fireflies)
+  initAmbientParticles();
+
+  // Load saved blooms
+  memories.forEach(memory => {
+    createBloom(memory.text, memory.emotion, memory.bloom.x, memory.bloom.y, memory.bloom.z);
+  });
+
+  // Event listeners
+  window.addEventListener('resize', onWindowResize);
+  animate();
 }
 
-// ✨ NEW: Play gentle sound when bloom blooms
+// Ambient particles
+function initAmbientParticles() {
+  const geometry = new THREE.BufferGeometry();
+  const positions = [];
+  const colors = [];
+  const sizes = [];
+
+  for (let i = 0; i < CONFIG.particleCount; i++) {
+    const x = (Math.random() - 0.5) * 40;
+    const y = (Math.random() - 0.5) * 20 + 5;
+    const z = (Math.random() - 0.5) * 40;
+    const color = new THREE.Color(Math.random() > 0.5 ? 0xffffff : 0xf4d35e);
+    const size = Math.random() * 0.3 + 0.1;
+
+    positions.push(x, y, z);
+    colors.push(color.r, color.g, color.b);
+    sizes.push(size);
+  }
+
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+  geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
+
+  const material = new THREE.PointsMaterial({
+    size: 0.5,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.8,
+    blending: THREE.AdditiveBlending
+  });
+
+  const particles = new THREE.Points(geometry, material);
+  scene.add(particles);
+  ambientParticles.push(particles);
+}
+
+// Procedural flower generator
+function createBloom(text, emotion, x, y, z) {
+  const colorHex = CONFIG.colors[emotion] || CONFIG.colors.neutral;
+  const color = new THREE.Color(colorHex);
+  const petalCount = Math.max(5, Math.min(12, text.length));
+  const maxRadius = CONFIG.bloomBaseRadius + Math.min(3, text.length * 0.2);
+
+  // Create bloom group
+  const bloom = new THREE.Group();
+  bloom.position.set(x || 0, y || 0, z || 0);
+
+  // Stem
+  const stemGeo = new THREE.CylinderGeometry(0.05, 0.05, maxRadius * 2, 8);
+  const stemMat = new THREE.MeshStandardMaterial({
+    color: color,
+    roughness: 0.8,
+    metalness: 0.1
+  });
+  const stem = new THREE.Mesh(stemGeo, stemMat);
+  stem.position.y = maxRadius;
+  bloom.add(stem);
+
+  // Petals
+  for (let i = 0; i < petalCount; i++) {
+    const angle = (i / petalCount) * Math.PI * 2;
+    const petalGeo = new THREE.ConeGeometry(maxRadius * 0.4, maxRadius, 8, 1, true);
+    const petalMat = new THREE.MeshStandardMaterial({
+      color: color,
+      roughness: 0.6,
+      metalness: 0.2,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.9
+    });
+    const petal = new THREE.Mesh(petalGeo, petalMat);
+    
+    petal.position.y = maxRadius * 0.5;
+    petal.rotation.x = -Math.PI / 4;
+    petal.rotation.z = angle;
+    petal.scale.set(1, 1, maxRadius * 0.8);
+    
+    bloom.add(petal);
+  }
+
+  // Center
+  const centerGeo = new THREE.SphereGeometry(maxRadius * 0.2, 16, 16);
+  const centerMat = new THREE.MeshStandardMaterial({
+    color: 0xffffff,
+    roughness: 0.2,
+    metalness: 0.5
+  });
+  const center = new THREE.Mesh(centerGeo, centerMat);
+  center.position.y = maxRadius * 0.5;
+  bloom.add(center);
+
+  // Add bloom to scene
+  bloomGroup.add(bloom);
+  scene.add(bloomGroup);
+
+  // Animate bloom growth
+  gsap.from(bloom.scale, {
+    x: 0, y: 0, z: 0,
+    duration: 2,
+    ease: "back.out(1.7)"
+  });
+
+  // Animate bloom rotation
+  gsap.to(bloom.rotation, {
+    y: Math.PI * 2,
+    duration: 10,
+    repeat: -1,
+    ease: "none"
+  });
+
+  // Play bloom sound
+  playBloomSound(emotion);
+
+  CONFIG.bloomCount++;
+}
+
+// Sound
 function playBloomSound(emotion) {
   if (!audioContext) return;
+  
   const osc = audioContext.createOscillator();
   const gain = audioContext.createGain();
   
-  // Frequency based on emotion
-  let freq = 220; // A3
-  if (emotion === 'joy') freq = 330; // E4
-  if (emotion === 'wonder') freq = 440; // A4
-  if (emotion === 'sorrow') freq = 164.81; // E3
+  let freq = 220;
+  if (emotion === 'joy') freq = 330;
+  if (emotion === 'wonder') freq = 440;
+  if (emotion === 'sorrow') freq = 164.81;
   
   osc.frequency.value = freq;
   osc.type = 'sine';
@@ -76,162 +254,6 @@ function playBloomSound(emotion) {
   osc.stop(audioContext.currentTime + 2);
 }
 
-// Bloom class (enhanced for saved memories)
-class Bloom {
-  constructor(text, emotion, x, y) {
-    this.x = x || canvas.width / 2;
-    this.y = y || canvas.height / 2;
-    this.radius = 0;
-    this.maxRadius = CONFIG.bloomBaseRadius + Math.min(100, text.length * 3);
-    this.emotion = emotion;
-    this.color = CONFIG.colors[emotion] || CONFIG.colors.neutral;
-    this.petalCount = Math.max(5, Math.min(12, text.length));
-    this.angle = 0;
-    this.growthRate = CONFIG.bloomGrowthSpeed;
-    this.opacity = 0;
-    this.particles = [];
-    this.text = text;
-    this.createdAt = Date.now();
-    
-    // Initialize particles
-    for (let i = 0; i < 20; i++) {
-      this.particles.push({
-        angle: Math.random() * Math.PI * 2,
-        radius: Math.random() * this.maxRadius,
-        speed: Math.random() * 0.05 + 0.01,
-        offset: Math.random() * Math.PI * 2
-      });
-    }
-  }
-
-  update() {
-    // Grow bloom slowly (like real plant)
-    if (this.radius < this.maxRadius) {
-      this.radius += this.growthRate;
-      this.opacity = Math.min(1, this.radius / this.maxRadius);
-    }
-
-    // Animate particles
-    if (analyser) {
-      analyser.getByteFrequencyData(dataArray);
-      const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
-      const intensity = avg / 255;
-      
-      this.particles.forEach(p => {
-        p.angle += p.speed + intensity * 0.1;
-        p.radius = this.maxRadius * (0.7 + intensity * 0.6);
-      });
-    }
-  }
-
-  draw(ctx) {
-    if (this.opacity <= 0) return;
-
-    ctx.save();
-    ctx.translate(this.x, this.y);
-    ctx.globalAlpha = this.opacity;
-
-    // Draw stem (curved)
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.quadraticCurveTo(0, -this.maxRadius * 0.5, 0, -this.maxRadius * 1.5);
-    ctx.strokeStyle = this.color;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    // Draw leaves
-    this.drawLeaf(0, -this.maxRadius * 0.8, -0.5);
-    this.drawLeaf(0, -this.maxRadius * 0.8, 0.5);
-
-    // Draw petals
-    for (let i = 0; i < this.petalCount; i++) {
-      const angle = (i / this.petalCount) * Math.PI * 2;
-      ctx.save();
-      ctx.rotate(angle);
-      ctx.translate(0, -this.maxRadius * 0.3);
-      ctx.rotate(-Math.PI / 2);
-
-      // Petal shape
-      ctx.beginPath();
-      ctx.ellipse(0, 0, this.maxRadius * 0.4, this.maxRadius * 0.8, 0, 0, Math.PI * 2);
-      ctx.fillStyle = this.color;
-      ctx.fill();
-
-      // Petal gradient
-      const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, this.maxRadius * 0.8);
-      grad.addColorStop(0, this.color);
-      grad.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = grad;
-      ctx.fill();
-
-      ctx.restore();
-    }
-
-    // Draw center
-    ctx.beginPath();
-    ctx.arc(0, 0, this.maxRadius * 0.2, 0, Math.PI * 2);
-    ctx.fillStyle = '#fff';
-    ctx.globalAlpha = 0.8;
-    ctx.fill();
-
-    // Draw particles
-    ctx.globalAlpha = 0.6;
-    this.particles.forEach(p => {
-      const x = Math.cos(p.angle) * p.radius;
-      const y = Math.sin(p.angle) * p.radius;
-      ctx.beginPath();
-      ctx.arc(x, y, 2, 0, Math.PI * 2);
-      ctx.fillStyle = '#fff';
-      ctx.fill();
-    });
-
-    ctx.restore();
-  }
-
-  drawLeaf(x, y, tilt) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(tilt);
-    ctx.beginPath();
-    ctx.ellipse(0, 0, 15, 30, 0, 0, Math.PI * 2);
-    ctx.fillStyle = this.color;
-    ctx.globalAlpha = 0.7;
-    ctx.fill();
-    ctx.restore();
-  }
-}
-
-// ✨ NEW: Render saved memories as blooms
-function renderBloom(memories) {
-  memories.forEach(memory => {
-    const bloom = new Bloom(memory.text, memory.emotion, memory.bloom.x, memory.bloom.y);
-    bloom.radius = bloom.maxRadius; // Fully grown
-    bloom.opacity = 0.7;
-    bloom.draw(ctx);
-  });
-}
-
-// ✨ NEW: Draw ambient particles
-function drawAmbientParticles() {
-  ambientParticles.forEach(p => {
-    p.x += p.speedX;
-    p.y += p.speedY;
-    
-    // Wrap around screen
-    if (p.x < 0) p.x = canvas.width;
-    if (p.x > canvas.width) p.x = 0;
-    if (p.y < 0) p.y = canvas.height;
-    if (p.y > canvas.height) p.y = 0;
-    
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-    ctx.fillStyle = p.color;
-    ctx.globalAlpha = p.opacity;
-    ctx.fill();
-  });
-  ctx.globalAlpha = 1;
-}
-
 // Memory management
 function addMemory(text, emotion) {
   const memory = {
@@ -240,18 +262,16 @@ function addMemory(text, emotion) {
     emotion,
     timestamp: new Date().toISOString(),
     bloom: {
-      x: Math.random() * (canvas.width - 100) + 50,
-      y: Math.random() * (canvas.height - 200) + 100,
-      color: CONFIG.colors[emotion] || CONFIG.colors.neutral
+      x: (Math.random() - 0.5) * 10,
+      y: 0,
+      z: (Math.random() - 0.5) * 10
     }
   };
 
   memories.unshift(memory);
   localStorage.setItem('echo_garden_memories', JSON.stringify(memories));
   renderMemories();
-  
-  // ✨ NEW: Play bloom sound
-  playBloomSound(emotion);
+  createBloom(text, emotion, memory.bloom.x, memory.bloom.y, memory.bloom.z);
   
   return memory;
 }
@@ -342,20 +362,13 @@ micBtn.addEventListener('click', async () => {
   }
 });
 
+let isRecording = false;
+
 async function startRecording() {
   isRecording = true;
   micBtn.classList.add('recording');
   micBtn.querySelector('.label').textContent = 'Listening...';
   showStatus('Listening... Speak your memory.');
-
-  bloom = new Bloom('', 'neutral');
-  bloom.x = canvas.width / 2;
-  bloom.y = canvas.height / 2;
-  bloom.maxRadius = 100;
-
-  if (analyser) {
-    analyser.getByteFrequencyData(dataArray);
-  }
 
   const mediaRecorder = new MediaRecorder(microphone);
   const audioChunks = [];
@@ -374,12 +387,6 @@ async function startRecording() {
     const text = await transcribeAudio(audioBlob);
     const emotion = analyzeSentiment(text);
     
-    if (bloom) {
-      bloom.text = text;
-      bloom.emotion = emotion;
-      bloom.maxRadius = CONFIG.bloomBaseRadius + text.length * 3;
-    }
-
     addMemory(text, emotion);
     
     showStatus(`" ${text.substring(0, 60) + (text.length > 60 ? '...' : '')} "`, 'success');
@@ -420,7 +427,6 @@ function analyzeSentiment(text) {
 }
 
 async function transcribeAudio(blob) {
-  // Fallback to empty if speech recognition fails
   return '';
 }
 
@@ -428,28 +434,38 @@ async function transcribeAudio(blob) {
 function animate() {
   requestAnimationFrame(animate);
 
-  // Clear canvas with fade
-  ctx.fillStyle = 'rgba(10, 15, 20, 0.15)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  const delta = clock.getDelta();
+  const time = clock.getElapsedTime();
 
-  // ✨ NEW: Draw ambient particles
-  drawAmbientParticles();
+  // Animate ambient particles
+  ambientParticles.forEach(p => {
+    p.rotation.y = time * 0.05;
+  });
 
-  // ✨ NEW: Draw saved memory blooms
-  renderBloom(memories);
+  // Animate blooms gently
+  bloomGroup.children.forEach((bloom, i) => {
+    bloom.position.y = Math.sin(time * 0.5 + i) * 0.2;
+    bloom.rotation.z = Math.sin(time * 0.3 + i) * 0.1;
+  });
 
-  // Draw current bloom if recording
-  if (bloom) {
-    bloom.update();
-    bloom.draw(ctx);
-  }
+  // Update controls
+  orbitControls.update();
+
+  // Render with postprocessing
+  composer.render();
+}
+
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  composer.setSize(window.innerWidth, window.innerHeight);
 }
 
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
-  initAmbientParticles();
+  initThree();
   renderMemories();
-  animate();
   
   if (memories.length === 0) {
     setTimeout(() => {
