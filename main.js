@@ -47,6 +47,13 @@ let microphone = null;
 let dataArray = null;
 let panner = null;
 
+// ✨ FIX: Auto-resume AudioContext on first interaction (browser policy)
+document.addEventListener('click', () => {
+  if (audioContext && audioContext.state === 'suspended') {
+    audioContext.resume();
+  }
+}, { once: true });
+
 // Initialize Three.js
 function initThree() {
   // Scene
@@ -412,7 +419,9 @@ async function initAudio() {
 }
 
 // Main logic
-micBtn.addEventListener('click', async () => {
+micBtn.addEventListener('click', async (e) => {
+  e.stopPropagation(); // ✨ FIX: Prevents click from reaching canvas
+
   if (!audioContext) await initAudio();
 
   if (audioContext.state === 'suspended') {
