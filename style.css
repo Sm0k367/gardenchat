@@ -1,4 +1,4 @@
-/* style.css — Echo Garden */
+/* style.css — Echo Garden (Working Version) */
 *,
 *::before,
 *::after {
@@ -35,32 +35,27 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Canvas — full screen, subtle vignette */
-#garden-canvas {
+#canvas-container {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
   z-index: 0;
-  opacity: 0.85;
 }
 
-/* UI Layer */
 #ui-layer {
   position: relative;
   z-index: 10;
   display: flex;
   flex-direction: column;
   height: 100vh;
-  pointer-events: none; /* Let clicks pass through to canvas */
 }
 
 .garden-header,
 .garden-footer {
   padding: 24px;
   text-align: center;
-  pointer-events: auto;
 }
 
 .garden-header {
@@ -92,7 +87,6 @@ body {
   opacity: 0.7;
 }
 
-/* Main Content */
 .garden-main {
   flex: 1;
   display: flex;
@@ -100,7 +94,6 @@ body {
   justify-content: center;
   align-items: center;
   padding: 0 24px;
-  pointer-events: auto;
 }
 
 .memory-container {
@@ -130,7 +123,6 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Controls */
 .controls {
   display: flex;
   flex-direction: column;
@@ -208,18 +200,32 @@ body {
   opacity: 1;
 }
 
+.memory-card {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 16px 20px;
+  border-radius: 16px;
+  max-width: 100%;
+  width: 100%;
+  box-shadow: var(--glow-soft);
+}
+
+.memory-text {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin: 0 0 8px 0;
+  color: var(--text-primary);
+}
+
+.memory-meta {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  opacity: 0.8;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   .title { font-size: 2rem; }
   .mic-btn { width: 70px; height: 70px; }
   .mic-btn .icon { font-size: 1.8rem; }
   .mic-btn .label { font-size: 0.75rem; }
-}
-
-/* Bloom Animation (for future JS) */
-.bloom {
-  position: absolute;
-  pointer-events: none;
-  opacity: 0;
-  transform-origin: center bottom;
 }
