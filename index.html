@@ -10,10 +10,10 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Canvas for visual bloom -->
-  <canvas id="garden-canvas"></canvas>
+  <!-- 3D Canvas Container -->
+  <div id="canvas-container"></div>
 
-  <!-- Floating UI -->
+  <!-- UI Overlay -->
   <div id="ui-layer">
     <header class="garden-header">
       <h1 class="title">Echo Garden</h1>
@@ -22,7 +22,6 @@
 
     <main class="garden-main">
       <div id="memory-container" class="memory-container">
-        <!-- Memories will be injected here -->
         <div class="empty-state">
           <p>Your garden is quiet. <br>Press the mic to begin.</p>
         </div>
@@ -42,11 +41,22 @@
     </footer>
   </div>
 
-  <!-- Hidden audio context (for spatial audio later) -->
-  <div id="audio-context" style="display: none;"></div>
-
   <!-- Scripts -->
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r160/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@r160/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@r160/examples/js/postprocessing/EffectComposer.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@r160/examples/js/postprocessing/RenderPass.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@r160/examples/js/postprocessing/UnrealBloomPass.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@r160/examples/js/shaders/CopyShader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@r160/examples/js/shaders/LuminosityHighPassShader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@r160/examples/js/postprocessing/ShaderPass.js"></script>
+  <!-- GSAP -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <!-- Howler.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
+  
+  <!-- Main App -->
   <script src="main.js"></script>
 </body>
 </html>
