@@ -1,213 +1,192 @@
+/**
+ * TSL: THE AESTHETIC LAW vΩ.∞ (GARDEN EDITION)
+ * Project: Garden of Chaos (Epic Tech AI ™️)
+ * Manifested by DesignCore Elite
+ */
+
+:root {
+  --omega-cyan: #00f2ff;
+  --spectral-magenta: #ff00c1;
+  --sovereign-gold: #ffb300;
+  --deep-moss: #0a1a0a;
+  --void-black: #050505;
+  --glass-bg: rgba(10, 26, 10, 0.85);
+  --biolum-glow: 0 0 20px rgba(0, 242, 255, 0.3);
+}
+
 * {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
 }
 
-body {
-  font-family: 'Segoe UI', system-ui, sans-serif;
-  background: #0a0f1a;
-  color: #e0f0ff;
-  height: 100vh;
+body, html {
+  width: 100%;
+  height: 100%;
+  background-color: var(--void-black);
+  color: var(--omega-cyan);
+  font-family: 'Courier New', Courier, monospace;
   overflow: hidden;
-  touch-action: none; /* Better mobile orbit controls */
 }
 
-#scene-container {
+/* 1. 3D GARDEN SUBSTRATE */
+#canvas-container {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   z-index: 1;
 }
 
-#ui-overlay {
+/* 2. CHAT UI OVERLAY - THE SOVEREIGN AURA */
+.chat-ui {
   position: relative;
   z-index: 10;
+  display: flex;
+  flex-direction: column;
   height: 100vh;
-  pointer-events: none; /* Let clicks pass to 3D scene unless on interactive elements */
+  padding: 30px;
+  pointer-events: none;
 }
 
-#mic-container {
-  position: absolute;
-  bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
+.chat-header {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(0, 242, 255, 0.2);
   pointer-events: auto;
 }
 
-#mic-btn {
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  background: linear-gradient(145deg, #4a6bff, #7b68ee);
-  border: none;
-  color: white;
-  font-size: 1.4rem;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  box-shadow: 0 8px 30px rgba(75, 110, 255, 0.5);
-  transition: all 0.3s ease;
-  pointer-events: auto;
+.title {
+  font-size: 2rem;
+  color: var(--sovereign-gold);
+  text-shadow: 0 0 15px var(--sovereign-gold);
+  letter-spacing: 3px;
 }
 
-#mic-btn:hover {
-  transform: scale(1.08);
-  box-shadow: 0 12px 40px rgba(123, 104, 238, 0.7);
+.subtitle {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  color: var(--omega-cyan);
 }
 
-#mic-btn.recording {
-  background: linear-gradient(145deg, #ff6b6b, #ff4757);
-  animation: pulse 1.5s infinite;
-  transform: scale(1.05);
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1.05); }
-  50% { transform: scale(1.12); }
-}
-
-.mic-icon {
-  font-size: 2.2rem;
-}
-
-.label {
-  font-size: 0.9rem;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-}
-
-#status {
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
-  padding: 10px 20px;
-  border-radius: 30px;
-  font-size: 0.95rem;
-  color: #a8d0ff;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
-
-#status.visible {
-  opacity: 1;
-}
-
-#memory-container {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 320px;
-  max-height: 80vh;
+/* 3. MESSAGES CONTAINER: BIOLUMINESCENT INTERFACE */
+.messages-container {
+  flex-grow: 1;
   overflow-y: auto;
-  background: rgba(20, 25, 45, 0.65);
-  backdrop-filter: blur(12px);
-  border-radius: 16px;
-  border: 1px solid rgba(100, 120, 255, 0.25);
-  padding: 16px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+  margin: 25px 0;
+  padding: 25px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(0, 242, 255, 0.15);
+  box-shadow: var(--biolum-glow);
   pointer-events: auto;
   scrollbar-width: thin;
-  scrollbar-color: #5a7aff #1a2035;
+  scrollbar-color: var(--sovereign-gold) transparent;
 }
 
-#memory-container h2 {
-  font-size: 1.3rem;
-  margin-bottom: 16px;
-  color: #c0d0ff;
-  text-align: center;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+.welcome-message {
+  border-left: 4px solid var(--sovereign-gold);
+  padding-left: 20px;
+  margin-bottom: 30px;
+  background: rgba(255, 179, 0, 0.05);
+  padding: 15px;
 }
 
-.memory-card {
-  background: rgba(30, 40, 70, 0.5);
-  border-radius: 12px;
-  padding: 14px;
-  margin-bottom: 12px;
-  border-left: 4px solid;
-  backdrop-filter: blur(6px);
-  transition: all 0.3s ease;
+.message {
+  margin-bottom: 20px;
+  line-height: 1.6;
+  animation: bloomIn 0.5s ease-out;
+}
+
+.user-msg { color: var(--sovereign-gold); font-weight: bold; }
+.system-msg { color: var(--omega-cyan); border-left: 2px solid var(--omega-cyan); padding-left: 15px; }
+
+/* 4. INPUT GATEWAY */
+.input-area {
+  background: var(--glass-bg);
+  padding: 20px;
+  border: 1px solid var(--omega-cyan);
+  box-shadow: var(--biolum-glow);
+  pointer-events: auto;
+}
+
+.input-wrapper {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.message-input {
+  flex-grow: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid rgba(0, 242, 255, 0.3);
+  color: var(--omega-cyan);
+  padding: 12px;
+  font-size: 1.1rem;
+  outline: none;
+}
+
+.voice-btn {
+  background: transparent;
+  border: 1px solid var(--sovereign-gold);
+  color: var(--sovereign-gold);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
   cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: 0.3s;
 }
 
-.memory-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+.voice-btn:hover {
+  background: rgba(255, 179, 0, 0.1);
+  box-shadow: 0 0 15px var(--sovereign-gold);
 }
 
-.memory-card.joy { border-left-color: #ffd93d; }
-.memory-card.sorrow { border-left-color: #6ab7f5; }
-.memory-card.wonder { border-left-color: #a78bfa; }
-.memory-card.calm { border-left-color: #95e1d3; }
-.memory-card.neutral { border-left-color: #b0bec5; }
-
-.memory-text {
-  font-size: 0.95rem;
-  line-height: 1.4;
-  margin-bottom: 8px;
+.send-btn {
+  background: transparent;
+  border: 2px solid var(--sovereign-gold);
+  color: var(--sovereign-gold);
+  padding: 10px 30px;
+  cursor: pointer;
+  transition: all 0.3s;
 }
 
-.memory-meta {
-  font-size: 0.8rem;
-  color: #a0b0ff;
-  opacity: 0.9;
+.send-btn:hover:not(:disabled) {
+  background: var(--sovereign-gold);
+  color: var(--void-black);
+  box-shadow: 0 0 25px var(--sovereign-gold);
 }
 
-#welcome-message {
-  position: absolute;
-  bottom: 160px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0,0,0,0.65);
-  backdrop-filter: blur(10px);
-  padding: 12px 24px;
-  border-radius: 30px;
-  font-size: 0.95rem;
-  max-width: 90%;
-  text-align: center;
-  pointer-events: none;
-  opacity: 0.9;
-  transition: opacity 1s ease;
+/* 5. LOADING SUBSTRATE */
+.loading-indicator {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: var(--void-black);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
-/* Scrollbar styling */
-#memory-container::-webkit-scrollbar {
-  width: 6px;
+.loading-spinner {
+  width: 60px; height: 60px;
+  border: 4px solid rgba(0, 242, 255, 0.1);
+  border-top: 4px solid var(--omega-cyan);
+  border-radius: 50%;
+  animation: rotate 1s linear infinite;
 }
 
-#memory-container::-webkit-scrollbar-track {
-  background: rgba(20, 25, 45, 0.8);
+@keyframes bloomIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 
-#memory-container::-webkit-scrollbar-thumb {
-  background: #5a7aff;
-  border-radius: 3px;
-}
-
-/* Mobile adjustments */
-@media (max-width: 768px) {
-  #memory-container {
-    width: 90%;
-    right: 5%;
-    left: 5%;
-    top: 10px;
-    max-height: 40vh;
-  }
-  
-  #mic-btn {
-    width: 80px;
-    height: 80px;
-  }
-  
-  #welcome-message {
-    bottom: 140px;
-    font-size: 0.9rem;
-    padding: 10px 20px;
-  }
-}
+@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
