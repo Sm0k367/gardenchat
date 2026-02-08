@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Fixed canvas positioning + z-index fix for mic button -->
+  <!-- FIXED: Canvas never blocks clicks -->
   <style>
     #canvas-container {
       position: fixed;
@@ -19,6 +19,7 @@
       width: 100vw;
       height: 100vh;
       z-index: 0;
+      pointer-events: none; /* ← CRITICAL: Canvas ignores all clicks */
     }
     #ui-layer {
       position: relative;
