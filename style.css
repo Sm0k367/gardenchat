@@ -1,4 +1,4 @@
-/* style.css — Echo Garden (Working Version) */
+/* style.css — Echo Garden (Fully Responsive) */
 *,
 *::before,
 *::after {
@@ -23,6 +23,7 @@
   --font-sans: 'Nunito Sans', sans-serif;
 }
 
+/* Mobile-safe base */
 body {
   margin: 0;
   padding: 0;
@@ -33,6 +34,12 @@ body {
   overflow: hidden;
   height: 100vh;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Safe area support for modern phones */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 #canvas-container {
@@ -50,12 +57,18 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  /* Prevent horizontal scroll */
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .garden-header,
 .garden-footer {
   padding: 24px;
   text-align: center;
+  /* Safe area padding */
+  padding-top: calc(24px + env(safe-area-inset-top));
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
 }
 
 .garden-header {
@@ -94,6 +107,9 @@ body {
   justify-content: center;
   align-items: center;
   padding: 0 24px;
+  /* Prevent overflow */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .memory-container {
@@ -129,6 +145,7 @@ body {
   align-items: center;
   gap: 16px;
   margin-top: 32px;
+  margin-bottom: 32px;
 }
 
 .mic-btn {
@@ -148,12 +165,19 @@ body {
   justify-content: center;
   align-items: center;
   overflow: hidden;
+  /* Touch target ≥ 44px */
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .mic-btn:hover {
   background: rgba(255, 255, 255, 0.12);
   transform: scale(1.05);
   box-shadow: var(--glow-gold);
+}
+
+.mic-btn:active {
+  transform: scale(0.95);
 }
 
 .mic-btn.recording {
@@ -207,6 +231,8 @@ body {
   max-width: 100%;
   width: 100%;
   box-shadow: var(--glow-soft);
+  /* Touch target for tap */
+  touch-action: manipulation;
 }
 
 .memory-text {
@@ -222,10 +248,24 @@ body {
   opacity: 0.8;
 }
 
-/* Responsive */
+/* Responsive adjustments */
 @media (max-width: 600px) {
   .title { font-size: 2rem; }
   .mic-btn { width: 70px; height: 70px; }
   .mic-btn .icon { font-size: 1.8rem; }
   .mic-btn .label { font-size: 0.75rem; }
+  .garden-header { padding-top: 16px; }
+  .garden-footer { padding-bottom: 16px; }
+}
+
+/* Landscape mode on mobile */
+@media (orientation: landscape) {
+  .garden-header,
+  .garden-footer {
+    padding: 12px;
+  }
+  .title { font-size: 1.5rem; }
+  .subtitle { font-size: 0.9rem; }
+  .mic-btn { width: 60px; height: 60px; }
+  .mic-btn .icon { font-size: 1.5rem; }
 }
