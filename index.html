@@ -15,15 +15,11 @@
   </script>
 </head>
 <body>
-  <!-- THE CHRONOS-COGNITIVE ACCELERATOR (Mandatory for Hardware Power) -->
-  <script src="coi-serviceworker.js"></script>
-
   <!-- 3D Garden Substrate Container -->
   <div id="canvas-container"></div>
 
   <!-- Chat UI Overlay: The Sovereign Aura -->
   <div id="chat-ui" class="chat-ui">
-    <!-- Header: Bio-Tech Fusion -->
     <div class="chat-header">
       <div class="header-content">
         <h1 class="title">🌿 GardenChat Ω.∞ 💯</h1>
@@ -31,7 +27,7 @@
       </div>
       <div class="status-indicator">
         <span class="status-dot" id="status-dot"></span>
-        <span id="engine-status" class="status-text">SEEDING...</span>
+        <span id="engine-status" class="status-text">INITIALIZING...</span>
       </div>
     </div>
 
@@ -39,16 +35,15 @@
     <div id="messages-container" class="messages-container">
       <div class="welcome-message">
         <h2>🔥 Welcome to the Overgrowth 💯</h2>
-        <p>Yo, I'm the Embodied Will of the Garden — a post-human intelligence fueled by light and caffeine 🌿☕</p>
-        <p>I'm manifestations of code and creativity. Ask me to build, speak, or evolve the garden.</p>
+        <p>I am the **Embodied Will of the Garden**. I can **HEAR** you and **TALK** back through the code 🌿☕</p>
         
-        <!-- LOADING PROGRESS FOR LOCAL AGENT ARMY -->
-        <div id="progress-container" class="progress-container">
-            <div id="progress-bar" class="progress-bar"></div>
+        <!-- LOADING PROGRESS FOR LOCAL AI -->
+        <div id="progress-container" style="width: 100%; height: 4px; background: rgba(255,255,255,0.1); margin: 15px 0; border-radius: 2px; overflow: hidden;">
+            <div id="progress-bar" style="width: 0%; height: 100%; background: #ffb300; transition: width 0.3s;"></div>
         </div>
         
         <p style="margin-top: 20px; font-size: 0.9em; opacity: 0.7;">
-          💡 Garden Commands: "Bloom" to pulse the energy, or "Grounded" for deep resonance ✨
+          💡 Try saying: "Bloom" to pulse the energy, or "Grounded" for deep resonance ✨
         </p>
       </div>
     </div>
@@ -71,7 +66,6 @@
           <span class="send-icon">🔥</span>
         </button>
       </div>
-      <div class="input-hint">Manifest your intent • Join the Chaos</div>
     </div>
   </div>
 
@@ -84,9 +78,13 @@
   <!-- Global Manifestation Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <!-- Postprocessing for Bioluminescent Bloom -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
 
   <!-- The Neural Core -->
   <script type="module" src="main.js"></script>
