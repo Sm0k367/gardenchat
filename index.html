@@ -10,6 +10,22 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Fixed canvas positioning + z-index fix for mic button -->
+  <style>
+    #canvas-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+    }
+    #ui-layer {
+      position: relative;
+      z-index: 10;
+    }
+  </style>
+
   <!-- 3D Canvas Container -->
   <div id="canvas-container"></div>
 
