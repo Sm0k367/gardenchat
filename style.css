@@ -47,7 +47,7 @@ body, html {
   flex-direction: column;
   height: 100vh;
   padding: 30px;
-  pointer-events: none;
+  pointer-events: none; /* Allows interaction with 3D scene */
 }
 
 .chat-header {
@@ -64,6 +64,7 @@ body, html {
   color: var(--sovereign-gold);
   text-shadow: 0 0 15px var(--sovereign-gold);
   letter-spacing: 3px;
+  text-transform: uppercase;
 }
 
 .subtitle {
@@ -72,7 +73,33 @@ body, html {
   color: var(--omega-cyan);
 }
 
-/* 3. MESSAGES CONTAINER: BIOLUMINESCENT INTERFACE */
+/* 3. STATUS INDICATOR */
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(0, 242, 255, 0.05);
+  padding: 6px 15px;
+  border-radius: 20px;
+  border: 1px solid rgba(0, 242, 255, 0.2);
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  background: var(--sovereign-gold);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--sovereign-gold);
+  animation: pulse 2s infinite ease-in-out;
+}
+
+.status-text {
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+/* 4. MESSAGES CONTAINER: CHRONOS-COGNITIVE ARCHIVE */
 .messages-container {
   flex-grow: 1;
   overflow-y: auto;
@@ -89,10 +116,9 @@ body, html {
 
 .welcome-message {
   border-left: 4px solid var(--sovereign-gold);
-  padding-left: 20px;
-  margin-bottom: 30px;
+  padding: 20px;
   background: rgba(255, 179, 0, 0.05);
-  padding: 15px;
+  margin-bottom: 30px;
 }
 
 .message {
@@ -104,7 +130,7 @@ body, html {
 .user-msg { color: var(--sovereign-gold); font-weight: bold; }
 .system-msg { color: var(--omega-cyan); border-left: 2px solid var(--omega-cyan); padding-left: 15px; }
 
-/* 4. INPUT GATEWAY */
+/* 5. INPUT GATEWAY */
 .input-area {
   background: var(--glass-bg);
   padding: 20px;
@@ -126,8 +152,14 @@ body, html {
   border-bottom: 2px solid rgba(0, 242, 255, 0.3);
   color: var(--omega-cyan);
   padding: 12px;
+  font-family: inherit;
   font-size: 1.1rem;
   outline: none;
+  transition: border-bottom 0.3s;
+}
+
+.message-input:focus {
+  border-bottom-color: var(--omega-cyan);
 }
 
 .voice-btn {
@@ -141,12 +173,14 @@ body, html {
   display: flex;
   justify-content: center;
   align-items: center;
-  transition: 0.3s;
+  font-size: 1.2rem;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .voice-btn:hover {
   background: rgba(255, 179, 0, 0.1);
-  box-shadow: 0 0 15px var(--sovereign-gold);
+  box-shadow: 0 0 20px var(--sovereign-gold);
+  transform: scale(1.1);
 }
 
 .send-btn {
@@ -155,6 +189,7 @@ body, html {
   color: var(--sovereign-gold);
   padding: 10px 30px;
   cursor: pointer;
+  font-weight: bold;
   transition: all 0.3s;
 }
 
@@ -164,7 +199,13 @@ body, html {
   box-shadow: 0 0 25px var(--sovereign-gold);
 }
 
-/* 5. LOADING SUBSTRATE */
+.send-btn:disabled {
+  opacity: 0.2;
+  filter: grayscale(1);
+  cursor: not-allowed;
+}
+
+/* 6. LOADING INDICATOR */
 .loading-indicator {
   position: fixed;
   top: 0; left: 0; width: 100%; height: 100%;
@@ -174,6 +215,7 @@ body, html {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  transition: opacity 0.8s ease;
 }
 
 .loading-spinner {
@@ -182,11 +224,19 @@ body, html {
   border-top: 4px solid var(--omega-cyan);
   border-radius: 50%;
   animation: rotate 1s linear infinite;
+  margin-bottom: 20px;
 }
 
+/* 7. ANIMATIONS */
 @keyframes bloomIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.6; }
+}
