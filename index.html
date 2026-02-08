@@ -19,7 +19,7 @@
       width: 100vw;
       height: 100vh;
       z-index: 0;
-      pointer-events: none; /* ← CRITICAL: Canvas ignores all clicks */
+      pointer-events: none;
     }
     #ui-layer {
       position: relative;
@@ -58,8 +58,7 @@
     </footer>
   </div>
 
-  <!-- Scripts -->
-  <!-- Three.js -->
+  <!-- Scripts: THREE.JS FIRST (critical!) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r160/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@r160/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@r160/examples/js/postprocessing/EffectComposer.js"></script>
@@ -68,12 +67,14 @@
   <script src="https://cdn.jsdelivr.net/npm/three@r160/examples/js/shaders/CopyShader.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@r160/examples/js/shaders/LuminosityHighPassShader.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@r160/examples/js/postprocessing/ShaderPass.js"></script>
+  
   <!-- GSAP -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  
   <!-- Howler.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
   
-  <!-- Main App -->
+  <!-- Main App (loaded LAST) -->
   <script src="main.js"></script>
 </body>
 </html>
