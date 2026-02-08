@@ -4,33 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Echo Garden — A Living Memory Sanctuary</title>
-  <meta name="description" content="A collaborative, voice-first dream journal where your spoken memories bloom into shared ecosystems." />
+  <meta name="description" content="A voice-first memory garden where your spoken memories bloom." />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌿</text></svg>">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Nunito+Sans:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- FIXED: Canvas never blocks clicks -->
-  <style>
-    #canvas-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 0;
-      pointer-events: none;
-    }
-    #ui-layer {
-      position: relative;
-      z-index: 10;
-    }
-  </style>
-
-  <!-- 3D Canvas Container -->
   <div id="canvas-container"></div>
 
-  <!-- UI Overlay -->
   <div id="ui-layer">
     <header class="garden-header">
       <h1 class="title">Echo Garden</h1>
@@ -58,23 +39,10 @@
     </footer>
   </div>
 
-  <!-- Scripts: THREE.JS FIRST (critical!) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r160/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@r160/examples/js/controls/OrbitControls.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@r160/examples/js/postprocessing/EffectComposer.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@r160/examples/js/postprocessing/RenderPass.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@r160/examples/js/postprocessing/UnrealBloomPass.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@r160/examples/js/shaders/CopyShader.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@r160/examples/js/shaders/LuminosityHighPassShader.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@r160/examples/js/postprocessing/ShaderPass.js"></script>
-  
   <!-- GSAP -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   
-  <!-- Howler.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
-  
-  <!-- Main App (loaded LAST) -->
+  <!-- Main App -->
   <script src="main.js"></script>
 </body>
 </html>
