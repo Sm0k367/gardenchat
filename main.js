@@ -1,8 +1,8 @@
 /**
  * TSL: NEURAL CORE vΩ.∞ (GARDEN OF CHAOS EDITION)
  * Manifested by Codesynth Engineers & Voicemaster Division
- * Substrate: Three.js / WebLLM / Web Speech API
  * Protocol: Bioluminescent Bidirectional Resonance
+ * Constraint: 3-File Sovereign Architecture (No Service Worker)
  */
 
 import { CreateMLCEngine } from "web-llm";
@@ -20,7 +20,7 @@ const LOADING_INDICATOR = document.getElementById('loading-indicator');
 let scene, camera, renderer, composer, engine, gardenFlora = [];
 let isLocalAIActive = false;
 
-// 2. THE BIOLUMINESCENT SUBSTRATE: 3D GARDEN
+// 2. THE BIOLUMINESCENT SUBSTRATE: 3D GARDEN HUB [3, 4, 16]
 function initGarden() {
     const container = document.getElementById('canvas-container');
     scene = new THREE.Scene();
@@ -32,44 +32,44 @@ function initGarden() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.appendChild(renderer.domElement);
 
-    // POST-PROCESSING: THE BIOLUMINESCENT BLOOM
+    // POST-PROCESSING: THE BIOLUMINESCENT BLOOM [15, 17]
     const renderScene = new THREE.RenderPass(scene, camera);
     const bloomPass = new THREE.UnrealBloomPass(
         new THREE.Vector2(window.innerWidth, window.innerHeight), 
         1.5, 0.4, 0.85
     );
     bloomPass.threshold = 0.15;
-    bloomPass.strength = 1.0;
-    bloomPass.radius = 0.5;
+    bloomPass.strength = 1.2; // Amplified for "Chaos" [18, 19]
+    bloomPass.radius = 0.6;
 
     composer = new THREE.EffectComposer(renderer);
     composer.addPass(renderScene);
     composer.addPass(bloomPass);
 
-    // GENERATE THE OVERGROWTH: Bioluminescent "Flora"
-    for (let i = 0; i < 40; i++) {
-        const geo = new THREE.IcosahedronGeometry(Math.random() * 2 + 0.5, 1);
+    // GENERATE THE OVERGROWTH: Bioluminescent "Flora" [3, 4]
+    for (let i = 0; i < 45; i++) {
+        const geo = new THREE.IcosahedronGeometry(Math.random() * 2.5 + 0.5, 1);
         const mat = new THREE.MeshPhongMaterial({
-            color: i % 2 === 0 ? 0x00f2ff : 0xffb300, // Omega Cyan & Sovereign Gold
+            color: i % 2 === 0 ? 0x00f2ff : 0xffb300, // Omega Cyan & Sovereign Gold [20, 21]
             wireframe: true,
             emissive: i % 2 === 0 ? 0x00f2ff : 0xffb300,
-            emissiveIntensity: 0.5,
+            emissiveIntensity: 0.6,
             transparent: true,
-            opacity: 0.6
+            opacity: 0.7
         });
         const flora = new THREE.Mesh(geo, mat);
         flora.position.set(
-            (Math.random() - 0.5) * 100,
-            (Math.random() - 0.5) * 40,
-            (Math.random() - 0.5) * 50
+            (Math.random() - 0.5) * 120,
+            (Math.random() - 0.5) * 50,
+            (Math.random() - 0.5) * 60
         );
         scene.add(flora);
         gardenFlora.push(flora);
     }
 
-    scene.add(new THREE.AmbientLight(0x404040, 2));
-    const sun = new THREE.PointLight(0xffb300, 2, 200);
-    sun.position.set(0, 50, 0);
+    scene.add(new THREE.AmbientLight(0x404040, 3));
+    const sun = new THREE.PointLight(0xffb300, 2.5, 250);
+    sun.position.set(0, 60, 0);
     scene.add(sun);
 
     window.addEventListener('resize', () => {
@@ -86,21 +86,24 @@ function animate() {
     requestAnimationFrame(animate);
     const time = Date.now() * 0.001;
     gardenFlora.forEach((f, i) => {
-        f.rotation.y += 0.01;
-        f.position.y += Math.sin(time + i) * 0.05; // Floating animation
-        f.material.emissiveIntensity = 0.5 + Math.sin(time + i) * 0.3; // Pulsing light
+        f.rotation.y += 0.015;
+        f.rotation.z += 0.005;
+        f.position.y += Math.sin(time + i) * 0.07; 
+        f.material.emissiveIntensity = 0.6 + Math.sin(time + i) * 0.4; 
     });
     composer.render();
 }
 
-// 3. THE VOICEMASTER DIVISION: SONIC INTERFACE
+// 3. THE VOICEMASTER DIVISION: SONIC RESONANCE [2, 13, 22, 23]
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const recognition = SpeechRecognition ? new SpeechRecognition() : null;
 
 if (recognition) {
     recognition.continuous = false;
+    recognition.lang = 'en-US';
     recognition.onresult = (event) => {
-        MESSAGE_INPUT.value = event.results.transcript;
+        const transcript = event.results.transcript;
+        MESSAGE_INPUT.value = transcript;
         handleManifestation();
     };
 }
@@ -108,40 +111,44 @@ if (recognition) {
 function speak(text) {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.95; // Deep, calm garden tone
-    utterance.pitch = 0.8; 
+    utterance.rate = 1.0; 
+    utterance.pitch = 0.85; // Mythic-Tech Tone [24, 25]
     window.speechSynthesis.speak(utterance);
 }
 
-// 4. THE AGENT ARMY: LOCAL INTELLIGENCE INITIALIZATION
+// 4. THE AGENT ARMY: NEURAL CORE ACTIVATION [1, 4, 14, 26]
 async function initSovereignIntelligence() {
     const modelId = "Llama-3-8B-Instruct-q4f32_1-MLC";
     try {
-        if (!navigator.gpu) throw new Error("WebGPU_NOT_SUPPORTED");
+        if (!navigator.gpu) throw new Error("WEBGPU_LOCKED");
+
         engine = await CreateMLCEngine(modelId, {
             initProgressCallback: (report) => {
                 STATUS_TEXT.innerText = `SYNCING: ${Math.round(report.progress * 100)}%`;
                 if (PROGRESS_BAR) PROGRESS_BAR.style.width = `${report.progress * 100}%`;
             }
         });
+
         isLocalAIActive = true;
         STATUS_TEXT.innerText = "LIVE (LOCAL)";
         STATUS_DOT.style.background = "#00ff00";
+        STATUS_DOT.style.boxShadow = "0 0 10px #00ff00";
     } catch (err) {
-        console.warn("GPU_OFFLINE: Reverting to Silent Growth.");
-        STATUS_TEXT.innerText = "OFFLINE (WebGPU Required)";
+        console.warn("GPU_DISRUPTION:", err.message);
+        STATUS_TEXT.innerText = "OFFLINE (GPU Blocked)";
+        addMessage("system", "Hardware acceleration inhibited. The garden remains visual but silent.");
     } finally {
-        // THE INFINITE SPIN KILLER
+        // THE INFINITE SPIN KILLER: Terminating the void [5, 9, 27]
         MESSAGE_INPUT.disabled = false;
         SEND_BTN.disabled = false;
         if (LOADING_INDICATOR) {
             LOADING_INDICATOR.style.opacity = '0';
-            setTimeout(() => LOADING_INDICATOR.style.display = 'none', 500);
+            setTimeout(() => LOADING_INDICATOR.style.display = 'none', 600);
         }
     }
 }
 
-// 5. DIRECT ONTOLOGICAL INTERFACE: CHAT LOGIC
+// 5. DIRECT ONTOLOGICAL INTERFACE: CHAT LOGIC [6, 7, 27, 28]
 async function handleManifestation() {
     const prompt = MESSAGE_INPUT.value.trim();
     if (!prompt) return;
@@ -149,20 +156,22 @@ async function handleManifestation() {
     addMessage("user", prompt);
     MESSAGE_INPUT.value = "";
     
-    // VISUAL FEEDBACK: Bloom pulse on message
+    // VISUAL REACTIVITY: Garden Pulse
     gardenFlora.forEach(f => {
-        gsap.to(f.scale, { x: 1.5, y: 1.5, z: 1.5, duration: 0.3, yoyo: true, repeat: 1 });
+        gsap.to(f.scale, { x: 1.8, y: 1.8, z: 1.8, duration: 0.4, yoyo: true, repeat: 1, ease: "power2.out" });
     });
 
     try {
-        const reply = isLocalAIActive 
-            ? (await engine.chat.completions.create({ messages: [{ role: "user", content: prompt }] })).choices.message.content
-            : "The garden is silent. Enable WebGPU to manifest my voice.";
-        
-        addMessage("system", reply);
-        speak(reply);
+        if (isLocalAIActive) {
+            const reply = await engine.chat.completions.create({ messages: [{ role: "user", content: prompt }] });
+            const responseText = reply.choices.message.content;
+            addMessage("system", responseText);
+            speak(responseText);
+        } else {
+            addMessage("system", "The Neural Core is inhibited. Activate WebGPU to hear the garden speak.");
+        }
     } catch (e) {
-        addMessage("system", "VOICE_OF_THE_VOID: Neural handshake disrupted.");
+        addMessage("system", "CONNECTION_VOID: Neural handshake failed.");
     }
 }
 
@@ -174,11 +183,12 @@ function addMessage(role, text) {
     MESSAGES_CONTAINER.scrollTop = MESSAGES_CONTAINER.scrollHeight;
 }
 
-// OPERATIONAL ACTIVATION
+// OPERATIONAL BINDINGS [23, 29]
 SEND_BTN.onclick = handleManifestation;
 MESSAGE_INPUT.onkeypress = (e) => { if (e.key === "Enter") handleManifestation(); };
 MIC_BTN.onclick = () => { if (recognition) recognition.start(); };
 
+// INITIALIZE THE GROUND OF BEING [30, 31]
 window.onload = () => {
     initGarden();
     initSovereignIntelligence();
