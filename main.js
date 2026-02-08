@@ -1,16 +1,22 @@
-// main.js — Echo Garden 3D
-// Voice-first memory garden with procedural 3D flowers
+// main.js — Echo Garden 3D (Moonlit Edition)
+// Voice-first memory garden with procedural 3D flowers, rain, and day/night cycle
 
 // --- CONFIG ---
 const CONFIG = {
   bloomBaseRadius: 1.5,
   bloomGrowthSpeed: 0.01,
   colors: {
-    joy: 0xf4d35e,
-    sorrow: 0x5d6d8e,
-    wonder: 0x9b59b6,
-    calm: 0x7d9c6b,
-    neutral: 0xa8b2c1
+    joy: 0xf4d35e,     // gold
+    sorrow: 0x5d6d8e,  // indigo
+    wonder: 0x9b59b6,  // violet
+    calm: 0x7d9c6b,    // moss
+    neutral: 0xa8b2c1  // silver
+  },
+  moonColors: {
+    night: 0x0f1625,   // deep indigo
+    dawn: 0x1a1f35,    // twilight
+    day: 0x121a23,     // soft blue
+    dusk: 0x1a1f35     // twilight
   },
   particleCount: 200,
   bloomCount: 0
@@ -30,19 +36,23 @@ let clock = new THREE.Clock();
 let memories = JSON.parse(localStorage.getItem('echo_garden_memories') || '[]');
 let ambientParticles = [];
 let bloomGroup = new THREE.Group();
+let rainGroup = new THREE.Group();
+let sunLight, ambientLight;
+let timeOfDay = 0; // 0 = midnight, 0.25 = dawn, 0.5 = noon, 0.75 = dusk, 1 = midnight
 
 // Audio
 let audioContext = null;
 let analyser = null;
 let microphone = null;
 let dataArray = null;
+let panner = null;
 
 // Initialize Three.js
 function initThree() {
   // Scene
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x0a0f14);
-  scene.fog = new THREE.FogExp2(0x0a0f14, 0.02);
+  scene.background = new THREE.Color(CONFIG.moonColors.night);
+  scene.fog = new THREE.FogExp2(CONFIG.moonColors.night, 0.02);
 
   // Camera
   camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -80,17 +90,17 @@ function initThree() {
   composer.addPass(bloomPass);
 
   // Lighting
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+  ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
   scene.add(ambientLight);
 
-  const directionalLight = new THREE.DirectionalLight(0xffaa00, 0.8);
-  directionalLight.position.set(10, 20, 10);
-  scene.add(directionalLight);
+  sunLight = new THREE.DirectionalLight(0xffaa00, 0.8);
+  sunLight.position.set(10, 20, 10);
+  scene.add(sunLight);
 
   // Ground plane (subtle)
   const groundGeo = new THREE.PlaneGeometry(100, 100);
   const groundMat = new THREE.MeshStandardMaterial({
-    color: 0x0f161e,
+    color: 0x0a0f14,
     roughness: 1,
     metalness: 0.1
   });
@@ -223,15 +233,68 @@ function createBloom(text, emotion, x, y, z) {
   });
 
   // Play bloom sound
-  playBloomSound(emotion);
+  playBloomSound(emotion, bloom.position);
+
+  // ✨ NEW: Raindrops for sad memories
+  if (emotion === 'sorrow') {
+    createRaindrops(bloom.position);
+  }
 
   CONFIG.bloomCount++;
 }
 
+// Raindrops for sad memories
+function createRaindrops(position) {
+  const rainGeo = new THREE.BufferGeometry();
+  const positions = [];
+  const colors = [];
+  const sizes = [];
+
+  for (let i = 0; i < 50; i++) {
+    const x = position.x + (Math.random() - 0.5) * 2;
+    const y = position.y + 3 + Math.random() * 2;
+    const z = position.z + (Math.random() - 0.5) * 2;
+    const color = new THREE.Color(0x5d6d8e); // indigo
+    const size = Math.random() * 0.1 + 0.05;
+
+    positions.push(x, y, z);
+    colors.push(color.r, color.g, color.b);
+    sizes.push(size);
+  }
+
+  rainGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  rainGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+  rainGeo.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
+
+  const material = new THREE.PointsMaterial({
+    size: 0.3,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.8,
+    blending: THREE.AdditiveBlending
+  });
+
+  const rain = new THREE.Points(rainGeo, material);
+  rain.userData = { velocity: 0.05 }; // Speed of falling
+  rainGroup.add(rain);
+  scene.add(rainGroup);
+}
+
 // Sound
-function playBloomSound(emotion) {
+function playBloomSound(emotion, position) {
   if (!audioContext) return;
-  
+
+  // Create spatial audio panner
+  panner = audioContext.createPanner();
+  panner.panningModel = 'HRTF';
+  panner.distanceModel = 'inverse';
+  panner.refDistance = 1;
+  panner.maxDistance = 100;
+  panner.rolloffFactor = 1;
+  panner.positionX.value = position.x;
+  panner.positionY.value = position.y;
+  panner.positionZ.value = position.z;
+
   const osc = audioContext.createOscillator();
   const gain = audioContext.createGain();
   
@@ -248,7 +311,8 @@ function playBloomSound(emotion) {
   gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 2);
   
   osc.connect(gain);
-  gain.connect(audioContext.destination);
+  gain.connect(panner);
+  panner.connect(audioContext.destination);
   
   osc.start();
   osc.stop(audioContext.currentTime + 2);
@@ -437,6 +501,12 @@ function animate() {
   const delta = clock.getDelta();
   const time = clock.getElapsedTime();
 
+  // Update time of day (0-1 cycle over 24 hours simulated)
+  timeOfDay = (time * 0.005) % 1;
+
+  // Update sky color based on time of day
+  updateSkyColor(timeOfDay);
+
   // Animate ambient particles
   ambientParticles.forEach(p => {
     p.rotation.y = time * 0.05;
@@ -448,11 +518,46 @@ function animate() {
     bloom.rotation.z = Math.sin(time * 0.3 + i) * 0.1;
   });
 
+  // Animate raindrops
+  rainGroup.children.forEach(rain => {
+    const positions = rain.geometry.attributes.position.array;
+    for (let i = 0; i < positions.length; i += 3) {
+      positions[i + 1] -= rain.userData.velocity;
+      if (positions[i + 1] < -2) {
+        positions[i + 1] = 3; // Reset to top
+      }
+    }
+    rain.geometry.attributes.position.needsUpdate = true;
+  });
+
+  // Update panner position for spatial audio
+  if (panner) {
+    panner.positionX.value = camera.position.x;
+    panner.positionY.value = camera.position.y;
+    panner.positionZ.value = camera.position.z;
+  }
+
   // Update controls
   orbitControls.update();
 
   // Render with postprocessing
   composer.render();
+}
+
+function updateSkyColor(timeOfDay) {
+  let color;
+  if (timeOfDay < 0.25) { // Dawn
+    color = CONFIG.moonColors.dawn;
+  } else if (timeOfDay < 0.5) { // Day
+    color = CONFIG.moonColors.day;
+  } else if (timeOfDay < 0.75) { // Dusk
+    color = CONFIG.moonColors.dusk;
+  } else { // Night
+    color = CONFIG.moonColors.night;
+  }
+
+  scene.background.setHex(color);
+  scene.fog.color.setHex(color);
 }
 
 function onWindowResize() {
