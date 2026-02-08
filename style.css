@@ -1,4 +1,4 @@
-/* style.css — Echo Garden (Fully Responsive) */
+/* style.css — Echo Garden (Moonlit Garden) */
 *,
 *::before,
 *::after {
@@ -42,6 +42,7 @@ body {
   padding-right: env(safe-area-inset-right);
 }
 
+/* Canvas positioning */
 #canvas-container {
   position: fixed;
   top: 0;
@@ -49,6 +50,8 @@ body {
   width: 100vw;
   height: 100vh;
   z-index: 0;
+  /* CRITICAL: Canvas ignores clicks */
+  pointer-events: none;
 }
 
 #ui-layer {
