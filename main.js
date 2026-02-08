@@ -1,24 +1,23 @@
-// main.js — Echo Garden
+// main.js — Echo Garden (Garden-Ready Version)
 // Voice-first memory garden with generative blooms
 
-// --- CONFIGURATION ---
 const CONFIG = {
   colors: {
-    joy: '#f4d35e',     // gold
-    sorrow: '#5d6d8e',  // indigo
-    wonder: '#9b59b6',  // violet
-    calm: '#7d9c6b',    // moss
-    neutral: '#a8b2c1'  // silver
+    joy: '#f4d35e',
+    sorrow: '#5d6d8e',
+    wonder: '#9b59b6',
+    calm: '#7d9c6b',
+    neutral: '#a8b2c1'
   },
   bloomBaseRadius: 60,
-  bloomGrowthSpeed: 0.8,
+  bloomGrowthSpeed: 0.3, // Slower = more organic
   audioContext: null,
   analyser: null,
   microphone: null,
   dataArray: null
 };
 
-// --- DOM ELEMENTS ---
+// DOM elements
 const canvas = document.getElementById('garden-canvas');
 const ctx = canvas.getContext('2d');
 const micBtn = document.getElementById('mic-btn');
@@ -32,43 +31,58 @@ let analyser = null;
 let microphone = null;
 let dataArray = null;
 let bloom = null;
+let ambientParticles = [];
 let memories = JSON.parse(localStorage.getItem('echo_garden_memories') || '[]');
 
-// Resize canvas
-function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
-
-// --- AUDIO ENGINE ---
-async function initAudio() {
-  if (audioContext) return;
-
-  audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  analyser = audioContext.createAnalyser();
-  analyser.fftSize = 256;
-  dataArray = new Uint8Array(analyser.frequencyBinCount);
-
-  try {
-    microphone = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const source = audioContext.createMediaStreamSource(microphone);
-    source.connect(analyser);
-  } catch (err) {
-    console.error('Audio access denied:', err);
-    showStatus('Microphone access denied. Please enable mic in browser settings.', 'error');
-    micBtn.disabled = true;
+// ✨ NEW: Initialize ambient particles (pollen, soft light)
+function initAmbientParticles() {
+  ambientParticles = [];
+  for (let i = 0; i < 50; i++) {
+    ambientParticles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      radius: Math.random() * 2 + 0.5,
+      speedX: (Math.random() - 0.5) * 0.3,
+      speedY: (Math.random() - 0.5) * 0.3,
+      opacity: Math.random() * 0.4 + 0.1,
+      color: Math.random() > 0.5 ? '#fff' : '#f4d35e'
+    });
   }
 }
 
-// --- VISUAL BLOOM GENERATOR ---
+// ✨ NEW: Play gentle sound when bloom blooms
+function playBloomSound(emotion) {
+  if (!audioContext) return;
+  const osc = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  
+  // Frequency based on emotion
+  let freq = 220; // A3
+  if (emotion === 'joy') freq = 330; // E4
+  if (emotion === 'wonder') freq = 440; // A4
+  if (emotion === 'sorrow') freq = 164.81; // E3
+  
+  osc.frequency.value = freq;
+  osc.type = 'sine';
+  
+  gain.gain.setValueAtTime(0.001, audioContext.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.05, audioContext.currentTime + 0.5);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 2);
+  
+  osc.connect(gain);
+  gain.connect(audioContext.destination);
+  
+  osc.start();
+  osc.stop(audioContext.currentTime + 2);
+}
+
+// Bloom class (enhanced for saved memories)
 class Bloom {
-  constructor(text, emotion) {
-    this.x = canvas.width / 2;
-    this.y = canvas.height / 2;
+  constructor(text, emotion, x, y) {
+    this.x = x || canvas.width / 2;
+    this.y = y || canvas.height / 2;
     this.radius = 0;
-    this.maxRadius = CONFIG.bloomBaseRadius + Math.random() * 40;
+    this.maxRadius = CONFIG.bloomBaseRadius + Math.min(100, text.length * 3);
     this.emotion = emotion;
     this.color = CONFIG.colors[emotion] || CONFIG.colors.neutral;
     this.petalCount = Math.max(5, Math.min(12, text.length));
@@ -77,8 +91,9 @@ class Bloom {
     this.opacity = 0;
     this.particles = [];
     this.text = text;
+    this.createdAt = Date.now();
     
-    // Initialize particles (sound-reactive)
+    // Initialize particles
     for (let i = 0; i < 20; i++) {
       this.particles.push({
         angle: Math.random() * Math.PI * 2,
@@ -90,18 +105,18 @@ class Bloom {
   }
 
   update() {
-    // Grow bloom
+    // Grow bloom slowly (like real plant)
     if (this.radius < this.maxRadius) {
       this.radius += this.growthRate;
       this.opacity = Math.min(1, this.radius / this.maxRadius);
     }
 
-    // Animate particles (sound-reactive)
+    // Animate particles
     if (analyser) {
       analyser.getByteFrequencyData(dataArray);
       const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
       const intensity = avg / 255;
-
+      
       this.particles.forEach(p => {
         p.angle += p.speed + intensity * 0.1;
         p.radius = this.maxRadius * (0.7 + intensity * 0.6);
@@ -116,7 +131,7 @@ class Bloom {
     ctx.translate(this.x, this.y);
     ctx.globalAlpha = this.opacity;
 
-    // Draw stem
+    // Draw stem (curved)
     ctx.beginPath();
     ctx.moveTo(0, 0);
     ctx.quadraticCurveTo(0, -this.maxRadius * 0.5, 0, -this.maxRadius * 1.5);
@@ -152,14 +167,14 @@ class Bloom {
       ctx.restore();
     }
 
-    // Draw center (stamen)
+    // Draw center
     ctx.beginPath();
     ctx.arc(0, 0, this.maxRadius * 0.2, 0, Math.PI * 2);
     ctx.fillStyle = '#fff';
     ctx.globalAlpha = 0.8;
     ctx.fill();
 
-    // Draw particles (sound-reactive)
+    // Draw particles
     ctx.globalAlpha = 0.6;
     this.particles.forEach(p => {
       const x = Math.cos(p.angle) * p.radius;
@@ -186,7 +201,38 @@ class Bloom {
   }
 }
 
-// --- MEMORY MANAGEMENT ---
+// ✨ NEW: Render saved memories as blooms
+function renderBloom(memories) {
+  memories.forEach(memory => {
+    const bloom = new Bloom(memory.text, memory.emotion, memory.bloom.x, memory.bloom.y);
+    bloom.radius = bloom.maxRadius; // Fully grown
+    bloom.opacity = 0.7;
+    bloom.draw(ctx);
+  });
+}
+
+// ✨ NEW: Draw ambient particles
+function drawAmbientParticles() {
+  ambientParticles.forEach(p => {
+    p.x += p.speedX;
+    p.y += p.speedY;
+    
+    // Wrap around screen
+    if (p.x < 0) p.x = canvas.width;
+    if (p.x > canvas.width) p.x = 0;
+    if (p.y < 0) p.y = canvas.height;
+    if (p.y > canvas.height) p.y = 0;
+    
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+    ctx.fillStyle = p.color;
+    ctx.globalAlpha = p.opacity;
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+}
+
+// Memory management
 function addMemory(text, emotion) {
   const memory = {
     id: Date.now(),
@@ -203,6 +249,10 @@ function addMemory(text, emotion) {
   memories.unshift(memory);
   localStorage.setItem('echo_garden_memories', JSON.stringify(memories));
   renderMemories();
+  
+  // ✨ NEW: Play bloom sound
+  playBloomSound(emotion);
+  
   return memory;
 }
 
@@ -244,12 +294,10 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-// --- UI HELPERS ---
 function showStatus(message, type = 'info') {
   statusEl.textContent = message;
   statusEl.className = 'status visible';
   
-  // Color code status
   if (type === 'error') statusEl.style.color = '#ff6b6b';
   else if (type === 'success') statusEl.style.color = '#7d9c6b';
   else statusEl.style.color = '#a8b2c1';
@@ -259,7 +307,27 @@ function showStatus(message, type = 'info') {
   }, 3000);
 }
 
-// --- MAIN LOGIC ---
+// Audio init
+async function initAudio() {
+  if (audioContext) return;
+
+  audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  analyser = audioContext.createAnalyser();
+  analyser.fftSize = 256;
+  dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+  try {
+    microphone = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const source = audioContext.createMediaStreamSource(microphone);
+    source.connect(analyser);
+  } catch (err) {
+    console.error('Audio access denied:', err);
+    showStatus('Microphone access denied. Please enable mic in browser settings.', 'error');
+    micBtn.disabled = true;
+  }
+}
+
+// Main logic
 micBtn.addEventListener('click', async () => {
   if (!audioContext) await initAudio();
 
@@ -280,18 +348,15 @@ async function startRecording() {
   micBtn.querySelector('.label').textContent = 'Listening...';
   showStatus('Listening... Speak your memory.');
 
-  // Start visual bloom
   bloom = new Bloom('', 'neutral');
   bloom.x = canvas.width / 2;
   bloom.y = canvas.height / 2;
-  bloom.maxRadius = 100; // Temporary, will update on finish
+  bloom.maxRadius = 100;
 
-  // Start audio analysis
   if (analyser) {
     analyser.getByteFrequencyData(dataArray);
   }
 
-  // Record audio
   const mediaRecorder = new MediaRecorder(microphone);
   const audioChunks = [];
 
@@ -303,24 +368,18 @@ async function startRecording() {
     const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
     const audioUrl = URL.createObjectURL(audioBlob);
     
-    // Play back audio
     const audio = new Audio(audioUrl);
-    audio.play().catch(() => {
-      // Audio autoplay blocked — user interaction needed
-    });
+    audio.play().catch(() => {});
 
-    // Analyze sentiment (simple heuristic)
     const text = await transcribeAudio(audioBlob);
     const emotion = analyzeSentiment(text);
     
-    // Finalize bloom
     if (bloom) {
       bloom.text = text;
       bloom.emotion = emotion;
       bloom.maxRadius = CONFIG.bloomBaseRadius + text.length * 3;
     }
 
-    // Add to garden
     addMemory(text, emotion);
     
     showStatus(`" ${text.substring(0, 60) + (text.length > 60 ? '...' : '')} "`, 'success');
@@ -330,17 +389,13 @@ async function startRecording() {
   };
 
   mediaRecorder.start();
-  setTimeout(() => mediaRecorder.stop(), 10000); // Auto-stop after 10s
+  setTimeout(() => mediaRecorder.stop(), 10000);
 }
 
 function stopRecording() {
-  // Stop manually if needed
-  if (isRecording) {
-    // MediaRecorder will stop on timeout or manual trigger
-  }
+  // Not used currently
 }
 
-// --- SENTIMENT ANALYSIS (Client-Side Heuristic) ---
 function analyzeSentiment(text) {
   if (!text) return 'neutral';
   
@@ -364,85 +419,38 @@ function analyzeSentiment(text) {
   return 'calm';
 }
 
-// --- SPEECH RECOGNITION (Web Speech API) ---
 async function transcribeAudio(blob) {
-  // Fallback: use Web Speech API if available
-  if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'en-US';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
-    return new Promise((resolve, reject) => {
-      recognition.onresult = (event) => {
-        resolve(event.results[0][0].transcript);
-      };
-      recognition.onerror = (error) => {
-        resolve(''); // Fallback to empty if speech recognition fails
-      };
-      recognition.onend = () => {
-        // No result — use blob analysis
-        resolve('');
-      };
-
-      // Convert blob to base64 for Web Speech API (limited support)
-      // Since Web Speech API doesn't accept blobs directly, we'll skip for now
-      // and use heuristic-based sentiment instead
-      resolve('');
-    });
-  }
+  // Fallback to empty if speech recognition fails
   return '';
 }
 
-// --- ANIMATION LOOP ---
+// Animation loop
 function animate() {
   requestAnimationFrame(animate);
 
-  // Clear canvas with fade effect
+  // Clear canvas with fade
   ctx.fillStyle = 'rgba(10, 15, 20, 0.15)';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Draw existing blooms from localStorage
-  memories.forEach(memory => {
-    // Recreate bloom for rendering
-    const tempBloom = new Bloom(memory.text, memory.emotion);
-    tempBloom.x = memory.bloom.x;
-    tempBloom.y = memory.bloom.y;
-    tempBloom.radius = tempBloom.maxRadius; // Fully grown
-    tempBloom.opacity = 0.7;
-    tempBloom.draw(ctx);
-  });
+  // ✨ NEW: Draw ambient particles
+  drawAmbientParticles();
+
+  // ✨ NEW: Draw saved memory blooms
+  renderBloom(memories);
 
   // Draw current bloom if recording
   if (bloom) {
     bloom.update();
     bloom.draw(ctx);
   }
-
-  // Draw ambient particles (background)
-  drawAmbientParticles();
 }
 
-function drawAmbientParticles() {
-  const time = Date.now() * 0.001;
-  for (let i = 0; i < 30; i++) {
-    const x = (Math.sin(time * 0.3 + i) * canvas.width * 0.4) + canvas.width / 2;
-    const y = (Math.cos(time * 0.2 + i * 1.5) * canvas.height * 0.3) + canvas.height / 2;
-    const size = Math.sin(time * 0.5 + i) * 2 + 1;
-    
-    ctx.beginPath();
-    ctx.arc(x, y, size, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(255, 255, 255, ${0.1 + 0.05 * Math.sin(time * 0.3 + i)})`;
-    ctx.fill();
-  }
-}
-// --- INITIALIZATION ---
+// Initialization
 document.addEventListener('DOMContentLoaded', () => {
+  initAmbientParticles();
   renderMemories();
   animate();
   
-  // Show welcome message if empty
   if (memories.length === 0) {
     setTimeout(() => {
       showStatus('Your garden is quiet. Press the mic to begin.', 'info');
