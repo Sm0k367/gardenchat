@@ -437,3 +437,15 @@ function drawAmbientParticles() {
     ctx.fill();
   }
 }
+// --- INITIALIZATION ---
+document.addEventListener('DOMContentLoaded', () => {
+  renderMemories();
+  animate();
+  
+  // Show welcome message if empty
+  if (memories.length === 0) {
+    setTimeout(() => {
+      showStatus('Your garden is quiet. Press the mic to begin.', 'info');
+    }, 1000);
+  }
+});
