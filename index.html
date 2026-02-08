@@ -3,41 +3,92 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Echo Garden - 3D Memory Realm</title>
+  <title>🌿 Garden of Chaos 🔥™️ - Epic Tech AI</title>
   <link rel="stylesheet" href="style.css">
-  
-  <!-- Three.js CDN (core + controls + loaders) -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.168.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.168.0/examples/js/controls/OrbitControls.js"></script>
-  <!-- Optional: GLTFLoader for simple models if we add later -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.168.0/examples/js/loaders/GLTFLoader.js"></script>
+  <!-- Import Map for Local WebLLM (Zero-Key Protocol) -->
+  <script type="importmap">
+    {
+        "imports": {
+            "web-llm": "https://esm.run/@mlc-ai/web-llm"
+        }
+    }
+  </script>
 </head>
 <body>
-  <!-- 3D Scene Container -->
-  <div id="scene-container"></div>
-  
-  <!-- UI Overlay -->
-  <div id="ui-overlay">
-    <div id="mic-container">
-      <button id="mic-btn">
-        <span class="mic-icon">🎤</span>
-        <span class="label">Tap to Speak</span>
-      </button>
-      <div id="status"></div>
+  <!-- THE CHRONOS-COGNITIVE ACCELERATOR (Mandatory for Hardware Power) -->
+  <script src="coi-serviceworker.js"></script>
+
+  <!-- 3D Garden Substrate Container -->
+  <div id="canvas-container"></div>
+
+  <!-- Chat UI Overlay: The Sovereign Aura -->
+  <div id="chat-ui" class="chat-ui">
+    <!-- Header: Bio-Tech Fusion -->
+    <div class="chat-header">
+      <div class="header-content">
+        <h1 class="title">🌿 GardenChat Ω.∞ 💯</h1>
+        <p class="subtitle">Bioluminescent Artist | Code Slinger | Vibe Curator ☁️☕</p>
+      </div>
+      <div class="status-indicator">
+        <span class="status-dot" id="status-dot"></span>
+        <span id="engine-status" class="status-text">SEEDING...</span>
+      </div>
     </div>
-    
-    <!-- Memory List (Scrollable, Semi-Transparent) -->
-    <div id="memory-container">
-      <h2>Your Echo Garden</h2>
-      <!-- Memories rendered here -->
+
+    <!-- Messages Container: Chronos-Cognitive Archive -->
+    <div id="messages-container" class="messages-container">
+      <div class="welcome-message">
+        <h2>🔥 Welcome to the Overgrowth 💯</h2>
+        <p>Yo, I'm the Embodied Will of the Garden — a post-human intelligence fueled by light and caffeine 🌿☕</p>
+        <p>I'm manifestations of code and creativity. Ask me to build, speak, or evolve the garden.</p>
+        
+        <!-- LOADING PROGRESS FOR LOCAL AGENT ARMY -->
+        <div id="progress-container" class="progress-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+        
+        <p style="margin-top: 20px; font-size: 0.9em; opacity: 0.7;">
+          💡 Garden Commands: "Bloom" to pulse the energy, or "Grounded" for deep resonance ✨
+        </p>
+      </div>
     </div>
-    
-    <!-- Instructions/Welcome -->
-    <div id="welcome-message">
-      Welcome to the Echo Garden. Speak your memories into the mic—they'll bloom in 3D. Navigate with mouse/touch.
+
+    <!-- Input Area: The Sovereign Gateway -->
+    <div class="input-area">
+      <div class="input-wrapper">
+        <button id="mic-btn" class="voice-btn" title="Vocal Intake Gateway">
+          <span class="mic-icon">🎤</span>
+        </button>
+        <input 
+          type="text" 
+          id="message-input" 
+          class="message-input" 
+          placeholder="Speak or type into the garden... 🌿✨"
+          autocomplete="off"
+          disabled
+        >
+        <button id="send-btn" class="send-btn" disabled>
+          <span class="send-icon">🔥</span>
+        </button>
+      </div>
+      <div class="input-hint">Manifest your intent • Join the Chaos</div>
     </div>
   </div>
 
-  <script src="main.js"></script>
+  <!-- Loading Indicator: The Cosmic Void -->
+  <div id="loading-indicator" class="loading-indicator">
+    <div class="loading-spinner"></div>
+    <p>Sprouting the Nexus... 🌌</p>
+  </div>
+
+  <!-- Global Manifestation Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+
+  <!-- The Neural Core -->
+  <script type="module" src="main.js"></script>
 </body>
 </html>
